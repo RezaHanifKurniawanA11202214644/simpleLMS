@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    env_file:
+      - .env
+    networks:
+      - django
+
+  backend:
+    container_name: lms-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    tty: true
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - django
+
+networks:
+  django:
